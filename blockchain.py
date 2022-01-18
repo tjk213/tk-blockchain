@@ -83,3 +83,83 @@ class Transaction(dict):
         assert Transaction.verify(self), "Transaction: Verification failed"
         values = [val for key,val in self.items()]
         return hash(tuple(values))
+
+class Block(dict):
+    '''
+    Block:
+        transactions <list>: Transactions recorded in this block
+        proof         <int>: Proof-of-work for this block
+        prev_hash     <int>: Hash of previous block in the chain
+        timestamp     <int>: Timestamp of this block's creation date
+    '''
+
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+    def __init__(self, transactions=[], proof=0, prev_hash=0, timestamp=time.time()):
+        super().__init__()
+        self['transactions'] = tuple(transactions) # Convert to tuple - blocks are immutable
+        self['proof'] = proof
+        self['prev_hash'] = prev_hash
+        self['timestamp'] = timestamp
+
+    @staticmethod
+    def verify(d):
+        ''' Verify that dictionary d represents a valid Block object '''
+        assert isinstance(d,dict), "Block: <dict> object expected for verification"
+
+        # Verify no missing keys
+        for key in Block().keys():
+            if key not in d.keys():
+                raise ValueError(f'Block::MissingKey: {key}')
+
+        # Verify no extra keys
+        for key in d.keys():
+            if key not in Block().keys():
+                raise ValueError(f'Block::UnexpectedKey: {key}')
+
+        # Verify types
+        if not isinstance(d['transactions'],list) and \
+           not isinstance(d['transactions'],tuple):
+            raise ValueError(f'Block::UnexpectedType: Transactions should be sequential container')
+
+        if not isinstance(d['proof'],int):
+            raise ValueError(f'Block::UnexpectedType: proof-of-work should be an integer')
+
+        if not isinstance(d['prev_hash'],int):
+            raise ValueError(f'Block::UnexpectedType: hash-link should be an integer')
+
+        if not isinstance(d['timestamp'],float):
+            raise ValueError(f'Block::UnexpectedType: timestamp should be an integer')
+
+        return True
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d,dict), "Block: passing non-dict to from_dict()?"
+        assert Block.verify(d), "Block: Verification failed"
+
+        ## d['transactions'] could point to any of the following here:
+        ##
+        ##    -container type: list or tuple
+        ##    -elemental type: dict or Transaction
+        ##
+        ## The Block constructor converts to tuple type, so we don't really
+        ## care what the given container type is.
+        ##
+        ## If the element type is Transaction, then this is wastefully re-
+        ## constructing all of our objects, but it won't do any true harm.
+        ## If the element type is raw dictionaries, then this converts to
+        ## the Transaction type that our blockchain will be expecting.
+        ##
+        ## Typically, from_dict() is called with data loaded from a json,
+        ## so we primarily expect a list of raw dictionaries here.
+        transactions = [Transaction.from_dict(x) for x in d['transactions']]
+        return Block(transactions,d['proof'],d['prev_hash'],d['timestamp'])
+
+    def __hash__(self):
+        ''' Pack Block parameters into a tuple and return its hash '''
+        assert Block.verify(self), "Block: Verification failed"
+        values = [val for key,val in self.items()]
+        return hash(tuple(values))
