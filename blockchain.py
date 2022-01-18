@@ -79,7 +79,7 @@ class Blockchain:
             prev_hash = hash(self.last_block)
 
         # Create block
-        block = Block(self.current_transactions,proof,prev_hash,time.time())
+        block = Block(tuple(self.current_transactions),proof,prev_hash,time.time())
 
         self.chain.append(block)
         self.current_transactions = []
