@@ -20,8 +20,6 @@
 import sys
 import time
 
-from collections import namedtuple
-
 def wegman_hash(x):
     ''' Return the wegman-hash of integer x '''
     assert type(x) == int, "Unexpected input type"
@@ -42,8 +40,47 @@ def wegman_hash(x):
     product_shifted = (product >> 31) & 0xFFFFFFFF
     return product_masked + product_shifted
 
-Transaction = namedtuple('Transaction','sender receiver amount')
-Block = namedtuple('Block','transactions proof prev_hash timestamp')
+class Transaction:
+    def __init__(self, sender, receiver, amt):
+        self._sender = sender
+        self._receiver = receiver
+        self._amount = amt
+
+    @property
+    def sender(self):
+        return self._sender
+
+    @property
+    def receiver(self):
+        return self._receiver
+
+    @property
+    def amount(self):
+        return self._amount
+
+class Block:
+    def __init__(self, transactions, proof, prev_hash, timestamp=time.time()):
+        self._transactions = transactions
+        self._proof = proof
+        self._prev_hash = prev_hash
+        self._timestamp = timestamp
+
+    @property
+    def transactions(self):
+        return self._transactions
+
+    @property
+    def proof(self):
+        return self._proof
+
+    @property
+    def prev_hash(self):
+        return self._prev_hash
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
 
 class Blockchain:
 
