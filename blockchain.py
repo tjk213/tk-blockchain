@@ -20,6 +20,45 @@
 import sys
 import time
 
+def wegman_hash(x):
+    '''
+    Return the wegman-hash of integer x
+
+    Note: Only the bottom 28 bits of the return value should be relied upon as
+          sufficiently random by the caller. We could explicitly zero the
+          upper bits here to make this more clear, but most callers will be
+          reducing this to a much smaller range so we don't bother with a
+          redundant mask.
+    '''
+    assert type(x) == int, "wegman_hash(): Unexpected input type"
+    assert 0 <= x <= 2**64-1, "wegman_hash(): input out-of-range"
+
+    # Split into lo & hi
+    lo = (x >> 00) & 0xFFFFFFFF
+    hi = (x >> 32) & 0xFFFFFFFF
+
+    # Add random numbers [32-bit modulo add]
+    lo = (lo + 0xACEFADE5) & 0xFFFFFFFF
+    hi = (hi + 0xBADBABE5) & 0xFFFFFFFF
+
+    # Multiply
+    product = lo * hi
+
+    # Shift
+    product_masked  = (product >> 00) & 0xFFFFFFFF
+    product_shifted = (product >> 31) & 0xFFFFFFFF
+
+    ##
+    ## Add
+    ##
+    ## Note: this isn't restricted to 32-bits in python land, like our original
+    ##  C implementation is. The overflow bit should definitely not be
+    ##  relied upon as sufficiently random by callers, but that's true for the
+    ##  uppermost bits beneath the overflow bit, too. See function notes.
+    ##
+
+    return product_masked + product_shifted
+
 class Transaction(dict):
     '''
     Transaction:
