@@ -28,7 +28,11 @@ class Transaction(dict):
         amount   <int>: Amount of TKC to transfer
 
     Implementation Notes:
-        - We inherit from dict for automatic conversion to JSON
+        - We inherit from dict for automatic conversion to/from JSON
+
+           We could create a similar class with a one-liner using collections.namedtuple,
+           but this implementation gives us a from_dict() factory method that we'll use to
+           recreate objects after storing & reloading from JSON.
     '''
 
     # Overide attribute accessors so instance variables can be accessed like
