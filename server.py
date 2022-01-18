@@ -20,6 +20,7 @@
 import sys
 import uuid
 import flask
+import argparse
 
 import blockchain as bc
 
@@ -46,10 +47,44 @@ def brute_force_proof(last_proof):
 
 @app.route('/chain', methods=['GET'])
 def full_chain():
+    #print('server.py:')
+    #print(chain.chain)
+    #print('\n\n\n\n\n')
+
     ack = {
         'chain' : chain.chain
     }
     return flask.jsonify(ack), HTTP.OK
+
+@app.route('/register', methods=['POST'])
+def register_node():
+    req = flask.request.get_json()
+
+    try:
+        node = req['addr']
+    except KeyError as e:
+        return "Failed to decode node address", HTTP.BadRequest
+
+    chain.register_node(node)
+    ack = {
+        'message' : f'Node successfully registered.'
+    }
+
+    return flask.jsonify(ack), HTTP.Created
+
+@app.route('/resolve', methods=['GET'])
+def resolve():
+    replaced = chain.resolve_conflicts()
+
+    msg = 'Chain Replaced' if replaced else 'Chain Retained'
+
+    ack = {
+        'message' : msg,
+        'chain' : chain.chain
+    }
+
+    return flask.jsonify(ack), HTTP.OK
+
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
@@ -57,7 +92,7 @@ def new_transaction():
 
     try:
         idx = chain.new_transaction(req['sender'],req['receiver'],req['amount'])
-    except KeyError(e):
+    except KeyError as e:
         return "Missing sender/receiver/amount", HTTP.BadRequest
 
     ack = {
@@ -82,6 +117,12 @@ def mine():
     return flask.jsonify(ack), HTTP.OK
 
 def main():
+    parser = argparse.ArgumentParser(description='Initiate server node for TK-Chain')
+    parser.add_argument('--port','-p',type=int,metavar='<portnum>',required=True,
+                        help='Port number through which the server can be contacted')
+
+    args = parser.parse_args()
+
     next_proof=77
     num_proofs = 0
     while (num_proofs < 1):
@@ -90,7 +131,7 @@ def main():
         num_proofs += 1
 
     print('Starting server...')
-    app.run(host='0.0.0.0',port=777)
+    app.run(host='0.0.0.0',port=args.port)
     return
 
 
