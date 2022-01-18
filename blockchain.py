@@ -51,9 +51,23 @@ class Transaction(dict):
     def verify(d):
         ''' Verify that dictionary d represents a valid Transaction object '''
         assert isinstance(d,dict), "Transaction: <dict> object expected for verification"
+
+        # Verify no missing keys
+        for key in Transaction().keys():
+            if key not in d.keys():
+                raise ValueError(f'Transaction::MissingKey: {key}')
+
+        # Verify no extra keys
         for key in d.keys():
-            if key not in Transaction.keys():
+            if key not in Transaction().keys():
                 raise ValueError(f'Transaction::UnexpectedKey: {key}')
+
+        # Verify types
+        if not isinstance(d['sender'],str) or \
+           not isinstance(d['receiver'],str):
+            raise ValueError(f'Transaction::UnexpectedType: Addresses should be strings')
+        if not isinstance(d['amount'],int):
+            raise ValueError(f'Transaction::UnexpectedType: Amount should be an integer')
         return True
 
     @staticmethod
