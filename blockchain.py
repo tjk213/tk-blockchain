@@ -384,6 +384,31 @@ class Blockchain(list):
 
         return True
 
+    def mine_block(self, proof):
+        '''
+        Create new block and add it to the chain.
+
+        Params:
+          proof <int>: proof-of-work
+
+        Returns:
+          NewBlock <Block>: Generated block
+        '''
+        # Validate genesis block
+        if self.num_blocks == 0:
+            raise ValueError('Missing genesis block?')
+
+        # Validate proof
+        if not self.valid_proof(self.last_block.proof,proof):
+            raise ValueError('Invalid proof-of-work')
+
+        # Create block
+        block = Block(self.current_transactions,proof,hash(self.last_block))
+
+        self.append(block)              # Add block to the chain
+        self.current_transactions = []  # Reset pending transactions
+        return block                    # Return new block
+
     def new_transaction(self, sender, receiver, amt):
         '''
         Create a new transaction to go into the next block.
