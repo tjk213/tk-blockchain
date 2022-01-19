@@ -79,3 +79,13 @@ class Miner:
             if proof % 100000 == 0:
                 print(f'guess = {proof}...\r',end='',flush=True)
         return proof
+
+    def mine_block(self):
+        '''
+        Find proof-of-work and mint new block.
+        Returns the successful proof-of-work.
+        '''
+        new_proof = self.proof_of_work(self.chain.last_block.proof)
+        self.new_transaction(self.chain.MINE_ADDR,self.ID,1)
+        next_block = self.chain.mine_block(new_proof)
+        return new_proof
