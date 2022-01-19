@@ -199,3 +199,41 @@ def resolve():
         'message' : msg,
     }
     return flask.jsonify(ack), HTTP.OK
+
+def main():
+
+    ##
+    ## Parse Args
+    ##
+
+    parser = argparse.ArgumentParser(description='Initiate miner node for TK-Chain')
+    parser.add_argument('--port','-p',type=int,metavar='<portnum>',required=True,
+                        help='Port number through which the server can be contacted')
+
+    args = parser.parse_args()
+
+    ##
+    ## Warmup
+    ##
+    ##  This is just for fun. It gives our server processes a bit of spin-up
+    ##  time and verifies that we have some basic functionality before
+    ##  launching the actual server.
+    ##
+
+    next_proof=77
+    num_proofs = 0
+    while (num_proofs < 1):
+        next_proof = Miner.proof_of_work(next_proof)
+        print(f"Found next proof: {next_proof}")
+        num_proofs += 1
+
+    ##
+    ## Start the Flask server
+    ##
+
+    print('Starting server...')
+    app.run(host='0.0.0.0',port=args.port)
+    return
+
+
+if __name__ == "__main__": sys.exit(main())
