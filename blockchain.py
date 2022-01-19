@@ -216,3 +216,65 @@ class Block(dict):
         assert Block.verify(self), "Block: Verification failed"
         values = [val for key,val in self.items()]
         return hash(tuple(values))
+
+class Blockchain(list):
+    '''
+    Blockchain:
+        self <list>: List of Blocks representing this chain
+        current_transactions <list>: List of pending transactions for next block
+    '''
+
+    def __init__(self):
+        '''
+        *** PRIVATE: Clients should use factory methods ***
+        Construct an empty Blockchain.
+        '''
+        super().__init__()
+        self.current_transactions = []
+
+    @staticmethod
+    def init(seed=77):
+        '''
+        Initialize a new Blockchain.
+
+        Params:
+          seed <int>: Values used for genesis-block proof
+        Returns:
+          chain <Blockchain>: Newly created chain
+        '''
+
+        chain = Blockchain()
+        chain.append(Block(proof=seed,prev_hash=0))
+        return chain
+
+    @staticmethod
+    def from_list(L):
+        ''' Construct a Blockchain from a vanilla list '''
+        chain = Blockchain()
+
+        ##
+        ## Convert list elements to Blocks
+        ##
+        ##   Typically, this factory is used for reading data in from a json,
+        ##   which means our element types are going to be raw dictionaries.
+        ##   Therefore, we use Block's factory method to convert these into
+        ##   Block objects. If we're given actual Block objects already, then
+        ##   this is wasteful but it will still work. No need to optimize this
+        ##   case at this point since it's wholly unexpected.
+        ##
+        for b in L:
+            chain.append(Block.from_dict(b))
+        return chain
+
+    @property
+    def MINE_ADDR(self):
+        ''' Node address reserved for successful mine '''
+        return '0'
+
+    @property
+    def last_block(self):
+        return self[-1]
+
+    @property
+    def num_blocks(self):
+        return len(self)
