@@ -106,13 +106,13 @@ class Transaction(dict):
         assert isinstance(d,dict), "Transaction: <dict> object expected for verification"
 
         # Verify no missing keys
-        for key in Transaction.keys():
+        for key in Transaction().keys():
             if key not in d.keys():
                 raise ValueError(f'Transaction::MissingKey: {key}')
 
         # Verify no extra keys
         for key in d.keys():
-            if key not in Transaction.keys():
+            if key not in Transaction().keys():
                 raise ValueError(f'Transaction::UnexpectedKey: {key}')
 
         # Verify types
