@@ -339,6 +339,51 @@ class Blockchain(list):
         hashval = wegman_hash(guess)
         return hashval % 10000000 == 777777 # modulo 10,000 --> reading bottom ~14 bits of hashval
 
+    def valid(self):
+        ''' Return True if this instance represents a valid chain '''
+
+        # Empty chains are invalid
+        if self.num_blocks == 0:
+            return False
+
+        # All single-block chains are valid
+        if self.num_blocks == 1:
+            return True
+
+        ##
+        ## Validate chain
+        ##
+        ##  Each link in the chain is two-fold:
+        ##    - full hash of prior block is stored in current block
+        ##    - proof-of-work is a function of prior proof-of-work
+        ##
+        ##  Why do we need this double-link?
+        ##
+        ##    Well, proof-of-work links are clearly not sufficient by themselves because
+        ##    they *only* link the proofs, so anyone could read a block, save it's proof,
+        ##    update the transactions and the subsequent chain would still pass
+        ##    validation.
+        ##
+        ##    The hash-links solve this problem, but then why do we need the
+        ##    proof-of-work link? Well, I think I'm still a bit fuzzy on this but the
+        ##    proof everyone's competing to find must be a function of some part of the
+        ##    current head, otherwise there'd be no consensus on the problem everyone's
+        ##    trying to solve, or you wouldn't have a chain, or both.
+        ##
+        ##    If valid_proof() was a function of all the transactions in the previous
+        ##    block, as well as it's proof, could you then elminate the hash-link? Yes,
+        ##    I think you could. This would effectively merge the hash-link within the
+        ##    proof-of-work link.
+        ##
+        for i in range(1,self.num_blocks):
+            block = self[i]
+            last_block = self[i-1]
+            if block.prev_hash != hash(last_block) or \
+               not Blockchain.valid_proof(last_block.proof,block.proof):
+                return False
+
+        return True
+
     def new_transaction(self, sender, receiver, amt):
         '''
         Create a new transaction to go into the next block.
