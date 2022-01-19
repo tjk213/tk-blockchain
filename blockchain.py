@@ -163,13 +163,13 @@ class Block(dict):
         assert isinstance(d,dict), "Block: <dict> object expected for verification"
 
         # Verify no missing keys
-        for key in Block.keys():
+        for key in Block().keys():
             if key not in d.keys():
                 raise ValueError(f'Block::MissingKey: {key}')
 
         # Verify no extra keys
         for key in d.keys():
-            if key not in Block.keys():
+            if key not in Block().keys():
                 raise ValueError(f'Block::UnexpectedKey: {key}')
 
         # Verify types
@@ -183,7 +183,7 @@ class Block(dict):
         if not isinstance(d['prev_hash'],int):
             raise ValueError(f'Block::UnexpectedType: hash-link should be an integer')
 
-        if not isinstance(d['timestamp'],int):
+        if not isinstance(d['timestamp'],float):
             raise ValueError(f'Block::UnexpectedType: timestamp should be an integer')
 
         return True
