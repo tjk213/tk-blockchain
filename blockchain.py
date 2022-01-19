@@ -378,6 +378,10 @@ class Blockchain(list):
         for i in range(1,self.num_blocks):
             block = self[i]
             last_block = self[i-1]
+            print(f'Verifying block{i}:')
+            print(block)
+            print(f' hash_check: {block.prev_hash == hash(last_block)}')
+            print(f'proof_check: {Blockchain.valid_proof(last_block.proof,block.proof)}')
             if block.prev_hash != hash(last_block) or \
                not Blockchain.valid_proof(last_block.proof,block.proof):
                 return False
