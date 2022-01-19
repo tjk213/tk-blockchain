@@ -99,3 +99,37 @@ class Miner:
         self.new_transaction(self.chain.MINE_ADDR,self.ID,1)
         next_block = self.chain.mine_block(new_proof)
         return new_proof
+
+    def resolve_conflicts(self):
+        ''' Sync chains across active nodes '''
+        ##
+        ## Consensus algorithm: Take the longest valid chain
+        ##
+        ##  This is currently user-driven; synchronizations only occur when the
+        ##  user requests them. Furthermore, this consensus algorithm is going
+        ##  to drop transactions that were recorded onto any chains other than
+        ##  the longest one. How is this prevented in real bitcoin?
+        ##
+
+        changed = False
+
+        print(f'resolve_conflicts(): len(self) = {self.chain.num_blocks}')
+
+        for i,node in enumerate(self.peers):
+            # Request full chain from peer node
+            response = requests.get(f'http://{node}/chain')
+
+            if response.status_code != HTTP.OK:
+                continue # Node failure - ignore corresponding chain
+
+            # Convert from vanilla list to Blockchain
+            alt_chain = Blockchain.from_list(response.json()['chain'])
+
+            print(f'resolve_conflicts(): Checking chain #{i} [len={alt_chain.num_blocks}]')
+
+            # Check for dominant chain
+            if len(alt_chain) > len(self.chain) and alt_chain.valid():
+                changed = True
+                self.chain = alt_chain
+
+        return changed
