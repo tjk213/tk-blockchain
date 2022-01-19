@@ -67,3 +67,25 @@ class Miner:
         '''
         url = urlparse(addr)
         self.peers.add(url.netloc)
+
+    @staticmethod
+    def proof_of_work(last_proof):
+        '''
+        Search for valid proof given the last proof.
+
+        The current implementation is a brute-force search. Can we
+        invert the wegman hash to improve performance here? Are
+        bitcoin miners distinguished by cleverness in this search
+        algorithm, or merely in the speed at which they can brute-
+        force?
+
+        Is zero the best place to start here? Would it be faster if
+        we started from the last_proof (and looped back around if
+        necessary)?
+        '''
+        proof = 0
+        while not Blockchain.valid_proof(last_proof,proof):
+            proof += 1
+            if proof % 100000 == 0:
+                print(f'guess = {proof}...\r',end='',flush=True)
+        return proof
