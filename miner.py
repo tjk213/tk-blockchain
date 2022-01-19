@@ -133,3 +133,71 @@ class Miner:
                 self.chain = alt_chain
 
         return changed
+
+##
+## Globals
+##
+
+miner = Miner()
+app = flask.Flask('TKBC')
+
+@app.route('/register', methods=['POST'])
+def register_node():
+    req = flask.request.get_json()
+
+    try:
+        node = req['addr']
+    except KeyError as e:
+        return "Failed to decode node address", HTTP.BadRequest
+
+    miner.register_node(node)
+    ack = {
+        'message' : f'Node successfully registered.'
+    }
+
+    return flask.jsonify(ack), HTTP.Created
+
+@app.route('/transactions/new', methods=['POST'])
+def new_transaction():
+    req = flask.request.get_json()
+
+    try:
+        idx = miner.new_transaction(req['sender'],req['receiver'],req['amount'])
+    except KeyError as e:
+        return "Missing sender/receiver/amount", HTTP.BadRequest
+
+    ack = {
+        'message' : f'Transaction will be added to block {idx}'
+    }
+
+    return flask.jsonify(ack), HTTP.Created
+
+@app.route('/chain', methods=['GET'])
+def full_chain():
+    ack = {
+        'chain' : miner.chain
+    }
+    return flask.jsonify(ack), HTTP.OK
+
+@app.route('/mine', methods=['GET'])
+def mine():
+    next_proof = miner.mine_block()
+    ack = {
+        'message' : 'New Block Forged',
+        'proof' : next_proof
+    }
+
+    return flask.jsonify(ack), HTTP.OK
+
+@app.route('/resolve', methods=['GET'])
+def resolve():
+    replaced = miner.resolve_conflicts()
+
+    msg = 'Chain Replaced' if replaced else 'Chain Retained'
+
+    ack = {
+        'message' : msg,
+        'chain' : chain.chain
+    }
+
+    return flask.jsonify(ack), HTTP.OK
