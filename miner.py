@@ -48,3 +48,12 @@ class Miner:
 
     def new_transaction(self, sender, receiver, amt):
         return self.chain.new_transaction(sender,receiver,amt)
+
+    def register_node(self, addr):
+        '''
+        Register the given address as a peer node.
+        Params:
+          addr <str>: Address to register (example: http://localhost:123)
+        '''
+        url = urlparse(addr)
+        self.peers.add(url.netloc)
