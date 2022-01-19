@@ -266,6 +266,22 @@ class Blockchain(list):
             chain.append(Block.from_dict(b))
         return chain
 
+    def new_transaction(self, sender, receiver, amt):
+        '''
+        Create a new transaction to go into the next block.
+
+        Params:
+          sender   <str>: Address of sender
+          receiver <str>: Address of receiver
+          amt      <int>: Amount of TKC to transfer
+
+        Returns:
+          idx <int>: index of to-be-created parent block
+        '''
+
+        self.current_transactions.append(Transaction(sender,receiver,amt))
+        return self.num_blocks
+
     @property
     def MINE_ADDR(self):
         ''' Node address reserved for successful mine '''
