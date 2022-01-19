@@ -197,9 +197,7 @@ def resolve():
 
     ack = {
         'message' : msg,
-        'chain' : chain.chain
     }
-
     return flask.jsonify(ack), HTTP.OK
 
 def main():
