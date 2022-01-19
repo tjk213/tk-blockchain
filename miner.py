@@ -125,7 +125,7 @@ class Miner:
             # Convert from vanilla list to Blockchain
             alt_chain = Blockchain.from_list(response.json()['chain'])
 
-            print(f'resolve_conflicts(): Checking chain #{i} [len={alt_chain.num_blocks()}]')
+            print(f'resolve_conflicts(): Checking chain #{i} [len={alt_chain.num_blocks}]')
 
             # Check for dominant chain
             if len(alt_chain) > len(self.chain) and alt_chain.valid():
