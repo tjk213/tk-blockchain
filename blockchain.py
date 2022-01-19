@@ -216,3 +216,82 @@ class Block(dict):
         assert Block.verify(self), "Block: Verification failed"
         values = [val for key,val in self.items()]
         return hash(tuple(values))
+
+class Blockchain:
+    '''
+    Blockchain:
+        chain <list>: List of Blocks representing this chain
+        current_transactions <list>: List of pending transactions for next block
+    '''
+
+    def __init__(self, _chain=[]):
+        self.chain = []
+        self.current_transactions = []
+        self.create_block(proof=77) # Genesis block
+
+    @staticmethod
+    def valid_proof(proofA, proofB):
+        ''' Return true if <proofB> is a valid proof-of-work given prior proof <proofA> '''
+        guess = ((proofA & 0xFFFFFFFF) << 16) + proofB
+        hashval = wegman_hash(guess)
+        return hashval % 10000000 == 777777
+
+    def create_block(self, proof):
+        '''
+        Create new block and add it to the chain.
+
+        Params:
+          proof <int>: proof-of-work
+
+        Returns:
+          NewBlock <Block>: Generated block
+        '''
+
+        # Validate proof
+        if self.num_blocks == 0:
+            pass # Genesis block
+        else:
+            if not self.valid_proof(self.last_block.proof,proof):
+                raise ValueError('Invalid proof')
+
+        # Get previous hash
+        if self.num_blocks == 0:
+            prev_hash = 0 # Genesis block
+        else:
+            prev_hash = hash(self.last_block)
+
+        # Create block
+        block = Block(self.current_transactions,proof,prev_hash)
+
+        self.chain.append(block)        # Add block to the chain
+        self.current_transactions = []  # Reset pending transactions
+        return block                    # Return new block
+
+    def new_transaction(self, sender, receiver, amt):
+        '''
+        Create a new transaction to go into the next block.
+
+        Params:
+          sender   <str>: Address of sender
+          receiver <str>: Address of receiver
+          amt      <int>: Amount of TKC to transfer
+
+        Returns:
+          idx <int>: index of to-be-created parent block
+        '''
+
+        self.current_transactions.append(Transaction(sender,receiver,amt))
+        return self.num_blocks
+
+    @property
+    def MINE_ADDR(self):
+        ''' Node address reserved for successful mine '''
+        return '0'
+
+    @property
+    def last_block(self):
+        return self.chain[-1]
+
+    @property
+    def num_blocks(self):
+        return len(self.chain)
